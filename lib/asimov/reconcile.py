@@ -134,6 +134,9 @@ class Reconciler:
 
     def exclude(self, path):
         try:
+            if self.protected_path(path):
+                self.record(path, "protected", "Protected exclusion target")
+                return
             if path.is_symlink() or not path.is_dir():
                 self.record(path, "vanished", "Removed or replaced during reconciliation")
                 return
@@ -177,6 +180,10 @@ class Reconciler:
             return
         executable = self.config["executable"]
         for repo in sorted(self.repositories):
+            hook_roots = [Path(p).expanduser().resolve()
+                          for p in self.config.get("hook_roots", self.config["roots"])]
+            if not any(repo == root or root in repo.parents for root in hook_roots):
+                continue
             try:
                 custom = command([self.git, "-C", str(repo), "config", "--get", "core.hooksPath"])
                 if custom.returncode not in (0, 1):
@@ -290,7 +297,7 @@ def main():
             for event in engine.events:
                 if event["state"] in ("failed", "hook_deferred"):
                     print(event["path"] + ": " + event["reason"], file=sys.stderr)
-        return install_status or (1 if counts.get("failed") else 0)
+        return install_status or (1 if counts.get("failed") or counts.get("hook_deferred") else 0)
 
 
 if __name__ == "__main__":

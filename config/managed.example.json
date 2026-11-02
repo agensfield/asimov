@@ -78,6 +78,17 @@
         "build.gradle",
         "build.gradle.kts"
       ]
+    },
+    {
+      "directory": ".uv-cache",
+      "sentinels": [
+        "pyproject.toml"
+      ],
+      "inside": "CACHEDIR.TAG"
     }
+  ],
+  "hook_roots": [
+    "~/programming/vyvo/sensory-ai/sensory-ai-repo",
+    "~/programming/projects/agensfield"
   ]
 }
