@@ -4,7 +4,7 @@
 # Which GitHub repo + git remote releases target. Defaults to the project's home
 # (AsimovMac/asimov). Pinning GH_REPO to $(REPO) stops another configured remote
 # from winning gh's remote-detection.
-REPO ?= AsimovMac/asimov
+REPO ?= agensfield/asimov
 RELEASE_REMOTE ?= origin
 export GH_REPO ?= $(REPO)
 

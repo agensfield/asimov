@@ -1,0 +1,10 @@
+#!/bin/sh
+# Launchd fallback; report failures and stay quiet on routine success.
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+prefix=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
+"$prefix/asimov" reconcile --json
+status=$?
+if [ "$status" -ne 0 ]; then
+    /usr/bin/osascript -e 'display notification "Backup exclusions need attention. Check ~/.local/state/asimov/latest.json and the Asimov service logs." with title "Asimov reconciliation failed"' || true
+fi
+exit "$status"

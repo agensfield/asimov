@@ -1,0 +1,97 @@
+{
+  "roots": [
+    "~/programming",
+    "~/.agents/repo-ref",
+    "~/Documents/Codex"
+  ],
+  "protected_names": [
+    ".git",
+    ".worktrees-disabled",
+    "archive",
+    "archives",
+    "backups",
+    "fixture",
+    "fixtures"
+  ],
+  "protected_paths": [
+    "~/backups",
+    "~/programming/vyvo/backups"
+  ],
+  "install_hooks": true,
+  "executable": "/opt/homebrew/bin/asimov",
+  "cache_paths": [
+    "~/.bun/install/cache",
+    "~/.gradle/caches",
+    "~/.npm/_cacache",
+    "~/.npm/_npx",
+    "~/Library/Developer/Xcode/DerivedData",
+    "~/.gradle/wrapper/dists"
+  ],
+  "patterns": [
+    {
+      "directory": "node_modules",
+      "sentinels": [
+        "package.json"
+      ]
+    },
+    {
+      "directory": ".next",
+      "sentinels": [
+        "package.json"
+      ]
+    },
+    {
+      "directory": ".turbo",
+      "sentinels": [
+        "turbo.json"
+      ]
+    },
+    {
+      "directory": ".build",
+      "sentinels": [
+        "Package.swift"
+      ]
+    },
+    {
+      "directory": "target",
+      "sentinels": [
+        "Cargo.toml"
+      ]
+    },
+    {
+      "directory": ".venv",
+      "sentinels": [
+        "pyproject.toml",
+        "requirements.txt",
+        "uv.lock"
+      ],
+      "inside": "pyvenv.cfg"
+    },
+    {
+      "directory": ".gradle",
+      "sentinels": [
+        "build.gradle",
+        "build.gradle.kts"
+      ]
+    },
+    {
+      "directory": "build",
+      "sentinels": [
+        "build.gradle",
+        "build.gradle.kts"
+      ]
+    },
+    {
+      "directory": ".uv-cache",
+      "sentinels": [
+        "pyproject.toml"
+      ],
+      "inside": "CACHEDIR.TAG"
+    }
+  ],
+  "hook_roots": [
+    "~/programming/vyvo/sensory-ai/sensory-ai-repo",
+    "~/programming/projects/agensfield",
+    "~/programming/clients/miralab/miralab-web/website"
+  ]
+}

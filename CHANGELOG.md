@@ -1,3 +1,11 @@
+## [0.13.0] - 2026-11-02
+
+- Agensfield managed reconciliation: deterministic discovery, live verified
+  exclusions, tracked/evidence protection, per-repository hook composition,
+  serialized runs and durable receipts.
+- Standard-library Python helper and a failure-notifying user service.
+- Upstream legacy commands retained for compatibility.
+
 # Asimov Change Log
 
 All notable changes to this project will be documented in this file.
