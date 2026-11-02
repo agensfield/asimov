@@ -23,7 +23,9 @@
     "~/.bun/install/cache",
     "~/.gradle/caches",
     "~/.npm/_cacache",
-    "~/.npm/_npx"
+    "~/.npm/_npx",
+    "~/Library/Developer/Xcode/DerivedData",
+    "~/.gradle/wrapper/dists"
   ],
   "patterns": [
     {
@@ -89,6 +91,7 @@
   ],
   "hook_roots": [
     "~/programming/vyvo/sensory-ai/sensory-ai-repo",
-    "~/programming/projects/agensfield"
+    "~/programming/projects/agensfield",
+    "~/programming/clients/miralab/miralab-web/website"
   ]
 }
