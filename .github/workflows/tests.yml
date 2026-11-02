@@ -15,9 +15,11 @@ jobs:
   # matrix cell, in parallel with the test jobs.
   lint:
     name: shellcheck
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
 
       - name: Install shellcheck
         run: brew list shellcheck >/dev/null 2>&1 || brew install shellcheck
@@ -39,11 +41,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-14, macos-15]
+        os: [macos-26, xcode-27]
         bash: [system, homebrew]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
 
       - name: Install test dependencies
         run: |
@@ -73,7 +77,13 @@ jobs:
         run: make test BASH_BIN='${{ steps.select.outputs.bin }}' BATS_JOBS=4
 
   reconciliation:
-    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-26, xcode-27]
+    runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
       - run: python3 -m unittest discover -s tests -p 'test_reconcile.py' -v
