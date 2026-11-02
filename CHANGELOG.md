@@ -1,3 +1,10 @@
+## [0.13.2] - 2026-11-03
+
+- Support individually reviewed regular files through an explicit cache_files
+  allowlist, with the same protected-path guards and live marker verification.
+- Reconcile recreated cache files during the existing periodic sweep. No file
+  discovery patterns, additional services, or database operations are introduced.
+
 ## [0.13.1] - 2026-11-02
 
 - Make managed reconciliation the default command. Legacy scanning requires the

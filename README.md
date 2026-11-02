@@ -34,6 +34,13 @@ protected names are kept. No Spotlight index or successful-path cache is trusted
 Directory attributes are set even where a fixed-path exclusion already applies,
 allowing the Ramiz inheritance patch to propagate actual donor intent.
 
+Use `cache_files` for an exact allowlist of individually reviewed rebuildable
+files, such as a derived database and its sidecars. Existing regular files are
+marked and verified during full reconciliation; missing files are skipped and
+recreated files are checked again on the next sweep. `cache_paths` remains
+directory-only. Protected paths and symlinks cannot be overridden by either
+allowlist. Keep original histories and unrelated databases backed up.
+
 Run as the normal user, with Full Disk Access where required. Do not run the
 service as root. Existing historical backup data is unaffected and may still
 require pruning. A post-checkout/install hook leaves a timing window before it

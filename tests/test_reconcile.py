@@ -166,6 +166,45 @@ else:
         engine.exclude(self.dep)
         self.assertEqual(engine.events[-1]["state"], "protected")
 
+    def test_explicit_cache_files_reconcile_recreation_and_skip_missing_sidecars(self):
+        cache = self.base / "history-index.sqlite"
+        cache.write_bytes(b"derived index")
+        self.config["cache_files"] = [str(cache), str(cache) + "-wal"]
+        config = self.base / "config.json"
+        config.write_text(json.dumps(self.config))
+        args = [sys.executable, str(SOURCE), "--config", str(config), "--json"]
+        preview = subprocess.run(args + ["--dry-run"], capture_output=True, text=True)
+        self.assertEqual(preview.returncode, 0, preview.stderr)
+        with self.assertRaises(OSError):
+            metadata.read(cache, MARKER)
+        for _ in range(2):
+            result = subprocess.run(args, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            events = json.loads(result.stdout)["events"]
+            self.assertIn({"path": str(cache), "state": "excluded", "reason": ""}, events)
+            self.assertEqual(cache.read_bytes(), b"derived index")
+            self.assertTrue(metadata.read(cache, MARKER))
+            cache.unlink()
+            cache.write_bytes(b"derived index")
+
+    def test_file_allowlist_preserves_protection_symlinks_and_directory_contract(self):
+        cache = self.base / "history-index.sqlite"
+        cache.write_bytes(b"derived index")
+        self.config["protected_paths"] = [str(cache)]
+        engine = self.engine()
+        engine.exclude(cache, regular_file=True)
+        self.assertEqual(engine.events[-1]["state"], "protected")
+        self.config["protected_paths"] = []
+        linked = self.base / "linked.sqlite"
+        linked.symlink_to(cache)
+        engine = self.engine()
+        engine.exclude(linked, regular_file=True)
+        self.assertEqual(engine.events[-1]["state"], "vanished")
+        engine.exclude(cache)
+        self.assertEqual(engine.events[-1]["state"], "vanished")
+        with self.assertRaises(OSError):
+            metadata.read(cache, MARKER)
+
 
     def test_bare_cli_uses_verified_engine(self):
         config = self.base / "config.json"
