@@ -167,6 +167,17 @@ else:
         self.assertEqual(engine.events[-1]["state"], "protected")
 
 
+    def test_bare_cli_uses_verified_engine(self):
+        config = self.base / "config.json"
+        config.write_text(json.dumps(self.config))
+        launcher = SOURCE.parents[2] / "bin/asimov"
+        result = subprocess.run([str(launcher), "--config", str(config),
+                                 "--dry-run", "--json"],
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout)["counts"]["would_exclude"], 1)
+
+
 
 if __name__ == "__main__":
     unittest.main()
