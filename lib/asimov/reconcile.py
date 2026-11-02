@@ -277,6 +277,12 @@ def main():
             stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
             atomic_json(state / "receipts" / (stamp + ".json"), receipt)
             atomic_json(state / "latest.json", receipt)
+            if counts.get("failed") or counts.get("hook_deferred"):
+                atomic_json(state / "last-failure.json", receipt)
+            limit = max(10, int(config.get("receipt_limit", 192)))
+            for expired in sorted((state / "receipts").glob("*.json"))[:-limit]:
+                if not expired.is_symlink():
+                    expired.unlink()
         if args.json:
             print(json.dumps(receipt))
         else:
