@@ -16,7 +16,7 @@ import time
 import metadata
 
 MARKER = "com.apple.metadata:com_apple_backup_excludeItem"
-VERSION = "0.13.1"
+VERSION = "0.13.2"
 DEFAULT_CONFIG = Path.home() / ".config/asimov/managed.json"
 
 
@@ -132,12 +132,13 @@ class Reconciler:
             except (OSError, RuntimeError, subprocess.SubprocessError) as error:
                 self.record(parent, "failed", str(error))
 
-    def exclude(self, path):
+    def exclude(self, path, *, regular_file=False):
         try:
             if self.protected_path(path):
                 self.record(path, "protected", "Protected exclusion target")
                 return
-            if path.is_symlink() or not path.is_dir():
+            valid_type = path.is_file() if regular_file else path.is_dir()
+            if path.is_symlink() or not valid_type:
                 self.record(path, "vanished", "Removed or replaced during reconciliation")
                 return
             identity = path.stat()
@@ -163,7 +164,7 @@ class Reconciler:
                 raise RuntimeError(result.stdout.strip() + " " + result.stderr.strip())
             now = path.stat()
             if path.is_symlink() or (now.st_dev, now.st_ino) != before:
-                raise RuntimeError("Directory identity changed while setting exclusion")
+                raise RuntimeError("Target identity changed while setting exclusion")
             verify = command([self.tmutil, "isexcluded", str(path)])
             if verify.returncode or not verify.stdout.startswith("[Excluded]"):
                 raise RuntimeError("Exclusion did not verify")
@@ -274,6 +275,11 @@ def main():
             path = Path(item).expanduser()
             if path.exists() and not path.is_symlink():
                 engine.exclude(path)
+        # Individually reviewed cache files; never discover files by wildcard.
+        for item in config.get("cache_files", []) if not args.root else []:
+            path = Path(item).expanduser()
+            if path.exists() and not path.is_symlink():
+                engine.exclude(path, regular_file=True)
         engine.install_hooks(args.config.expanduser().resolve())
         counts = dict(collections.Counter(e["state"] for e in engine.events))
         receipt = {"version": VERSION, "time": dt.datetime.now(dt.timezone.utc).isoformat(),
