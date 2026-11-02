@@ -1,3 +1,9 @@
+## [0.13.1] - 2026-11-02
+
+- Make managed reconciliation the default command. Legacy scanning requires the
+  explicit legacy subcommand, preventing accidental use of broad cached policy.
+- 0.13.0 was superseded before distribution; its immutable source tag is retained.
+
 ## [0.13.0] - 2026-11-02
 
 - Agensfield managed reconciliation: deterministic discovery, live verified

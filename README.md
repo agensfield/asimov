@@ -5,10 +5,10 @@ MIT licensed; based on AsimovMac/asimov (see existing license and history).
 
 Install: `brew install agensfield/tap/asimov`.
 
-The production entry point is `asimov reconcile`. It uses Python's standard
+The default entry point is managed reconciliation, also spelled `asimov reconcile`. It uses Python's standard
 library for deterministic discovery, live Time Machine exclusion checks,
 tracked-file and protected-path guards, serialized runs, and verified receipts.
-Upstream's legacy scan commands remain available for compatibility, but are not
+Upstream's legacy scan commands require the explicit legacy subcommand and are not
 used by this fork's managed service.
 
 Copy and review config/managed.example.json as ~/.config/asimov/managed.json.

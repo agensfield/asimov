@@ -33,6 +33,7 @@ setup() {
   else
     ASIMOV_CMD=("${BATS_TEST_DIRNAME}/../bin/asimov")
   fi
+  ASIMOV_CMD+=("legacy")
 }
 
 # Clean up the temporary directory after each test.
