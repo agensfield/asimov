@@ -134,6 +134,39 @@ else:
             self.assertNotIn("failed", json.loads(out)["counts"])
         self.assertEqual(len(list((self.base / "state/receipts").glob("*.json"))), 2)
 
+    def test_hook_chains_existing_script_and_reconciles(self):
+        import shlex
+        self.config["install_hooks"] = True
+        shim = self.base / "asimov"
+        shim.write_text("#!/bin/sh\nshift\nexec " +
+                        shlex.join([sys.executable, str(SOURCE)]) + ' "$@"\n')
+        shim.chmod(0o755)
+        self.config["executable"] = str(shim)
+        config = self.base / "config.json"
+        config.write_text(json.dumps(self.config))
+        hook = self.repo / ".git/hooks/post-checkout"
+        log = self.base / "hook.log"
+        hook.write_text("#!/bin/sh\necho old >> " + shlex.quote(str(log)) + "\n")
+        hook.chmod(0o755)
+        engine = self.engine()
+        engine.scan(self.repo)
+        engine.install_hooks(config)
+        engine.install_hooks(config)
+        self.assertTrue(hook.with_name("post-checkout.pre-asimov").exists())
+        os.removexattr(self.dep, MARKER) if hasattr(os, "removexattr") else metadata.remove(self.dep, MARKER)
+        result = subprocess.run([str(hook), "old", "new", "1"], cwd=self.repo,
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(log.read_text(), "old\n")
+        self.assertTrue(metadata.read(self.dep, MARKER))
+
+    def test_explicit_cache_target_cannot_override_protection(self):
+        self.config["protected_paths"] = [str(self.dep)]
+        engine = self.engine()
+        engine.exclude(self.dep)
+        self.assertEqual(engine.events[-1]["state"], "protected")
+
+
 
 if __name__ == "__main__":
     unittest.main()
