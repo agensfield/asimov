@@ -71,3 +71,9 @@ jobs:
       # setup(), so there is no shared state between them.
       - name: Run tests
         run: make test BASH_BIN='${{ steps.select.outputs.bin }}' BATS_JOBS=4
+
+  reconciliation:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m unittest discover -s tests -p 'test_reconcile.py' -v

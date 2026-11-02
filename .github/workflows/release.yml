@@ -41,11 +41,9 @@ jobs:
           # tarball of all three rather than a single script. It unpacks to
           # asimov-<version>/{bin,lib,data} and installs with scripts/install.sh.
           STAGE="asimov-${FULL_VERSION}"
-          mkdir -p "$STAGE"
-          cp -a bin lib data scripts LICENSE.txt README.md CHANGELOG.md UPGRADING.md \
-            com.stevegrunwell.asimov.plist "$STAGE/"
           TARBALL="${STAGE}.tar.gz"
-          tar -czf "$TARBALL" "$STAGE"
+          python3 -m unittest discover -s tests -p 'test_reconcile.py' -v
+          git archive --format=tar --prefix="$STAGE/" HEAD | gzip -n > "$TARBALL"
 
           gh release create "$TAG" \
             --title "Asimov $TAG" \
@@ -53,4 +51,4 @@ jobs:
             $PRERELEASE_FLAG \
             "$TARBALL"
 
-          rm -rf "$NOTES_FILE" "$STAGE" "$TARBALL"
+          rm -f "$NOTES_FILE" "$TARBALL"

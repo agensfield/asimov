@@ -7,3 +7,6 @@
 CLAUDE.md
 docs/plans/
 docs/triage/
+
+__pycache__/
+*.pyc
