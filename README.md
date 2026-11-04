@@ -57,7 +57,8 @@ The existing user service keeps both portable item markers and native
 `tmutil addexclusion -p` entries. Native path entries bypass sticky-marker
 discovery through Spotlight and survive deletion/recreation at the same path.
 Receipts distinguish `fixed_registered` and `fixed_verified`; verification reads
-the native `SkipPaths` preferences, not just `tmutil isexcluded`.
+the native `SkipPaths` preferences through `defaults export`, not just
+`tmutil isexcluded` or a potentially delayed on-disk preferences plist.
 
 The root-owned helper accepts only approved dependency/sentinel pairs beneath
 installed roots and exact reviewed cache paths/files. It cannot exclude a whole

@@ -2,6 +2,7 @@
 import copy
 import json
 import os
+import plistlib
 from pathlib import Path
 import subprocess
 import sys
@@ -68,6 +69,14 @@ class PathHelperTests(unittest.TestCase):
         events = self.run_helper()
         self.assertEqual(events[0]['state'], 'fixed_verified')
         self.assertEqual(len(self.native.calls), 1)
+
+    def test_native_readback_uses_preferences_api_not_delayed_disk_plist(self):
+        result = subprocess.CompletedProcess([], 0,
+            plistlib.dumps({'SkipPaths': [str(self.dep)]}), b'')
+        with patch.object(path_helper.subprocess, 'run', return_value=result) as run:
+            self.assertEqual(path_helper.Native().paths(), {str(self.dep)})
+        self.assertEqual(run.call_args.args[0], ['/usr/bin/defaults', 'export',
+            '/Library/Preferences/com.apple.TimeMachine', '-'])
 
     def test_retirement_removes_only_owned_entries_and_only_in_scope(self):
         manual = str(self.root / 'manual/node_modules')

@@ -90,8 +90,11 @@ def validate_target(value, policy):
 
 class Native:
     def paths(self):
-        with PREFERENCES.open('rb') as stream:
-            value = plistlib.load(stream)
+        # cfprefsd can defer the on-disk plist write after tmutil exits. Read
+        # through the native preferences API rather than that stale disk file.
+        result = subprocess.run(['/usr/bin/defaults', 'export', str(PREFERENCES.with_suffix('')), '-'],
+                                capture_output=True, check=True, timeout=30)
+        value = plistlib.loads(result.stdout)
         return set(value.get('SkipPaths', []))
 
     def change(self, verb, paths):
