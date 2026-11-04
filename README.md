@@ -48,13 +48,8 @@ allowlist. Keep original histories and unrelated databases backed up.
 
 ### Native fixed-path registration
 
-Set `fixed_path_exclusions: true` in the reviewed managed config. Then explicitly
-install the narrow privilege bridge once (and again after helper/policy updates):
-
-```sh
-sudo asimov install-path-helper --user "$USER" --config "$HOME/.config/asimov/managed.json"
-asimov reconcile --json
-```
+Set `fixed_path_exclusions: true` in the reviewed managed config, then use the
+signed background setup below. It installs both the app and privilege bridge.
 
 The existing user service keeps both portable item markers and native
 `tmutil addexclusion -p` entries. Native path entries bypass sticky-marker
@@ -66,6 +61,7 @@ the native `SkipPaths` preferences through `defaults export`, not just
 The root-owned helper accepts only approved dependency/sentinel pairs beneath
 installed roots and exact reviewed cache paths/files. It cannot exclude a whole
 worktree, run Git, change backup schedules, or execute configurable commands.
+
 ### Signed background identity
 
 For automatic native path maintenance, install the native Homebrew launcher and
@@ -82,7 +78,8 @@ The installer verifies the complete signature and refuses a replacement with a
 different designated signing requirement. A stable bundle identifier and
 Developer ID requirement let macOS bind permissions to Asimov across updates.
 The app uses the stable installed CLI entry point, so routine engine upgrades do
-not require rebuilding the signed launcher.
+not require rebuilding the signed launcher. Homebrew builds it locally; signing
+keys and prebuilt personally signed binaries are not uploaded to the repository.
 
 The one Homebrew service launches this app when installed, with the same
 900-second schedule. Its native main executable stays alive as the responsible
@@ -91,8 +88,8 @@ refuses to run as root. Without the installed app, Homebrew uses its native
 launcher directly; granting an interpreter permission is not the managed setup.
 
 Before enabling the service, verify launchd attribution with the app's
-`--check-identity` mode. This fixed read-only probe uses the restricted helper to open the system's
-protected TCC database and close it without reading content. It grants no
+`--check-identity` mode. This fixed read-only probe uses the restricted helper to
+open the system's protected TCC database and close it without reading content. It grants no
 permission and changes no database. Enable **Asimov Background** manually in
 System Settings > Privacy & Security > Full Disk Access, then restart the
 Homebrew service. FDA has no ordinary Allow prompt. Verify a real background
@@ -103,6 +100,11 @@ The sudo rule permits only this standalone helper through Apple's isolated
 Python interpreter. Scanning, Git checks, and the existing service remain under
 the normal user; no daemon or repository hooks are added. Reinstall the helper
 after changing its root-owned policy; a mismatch is reported as a failure.
+Policy-only updates do not require re-signing the app:
+
+```sh
+sudo asimov install-path-helper --user "$USER" --config "$HOME/.config/asimov/managed.json"
+```
 
 Only entries created by this helper are retired during complete reconciliation
 of their scope. Pre-existing manual exclusions are never adopted or removed.
