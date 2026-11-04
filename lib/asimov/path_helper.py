@@ -106,6 +106,14 @@ class Native:
                                    'tmutil fixed-path update failed')
 
 
+def identity_probe():
+    descriptor = os.open('/Library/Application Support/com.apple.TCC/TCC.db', os.O_RDONLY)
+    try:
+        return {'protected_open_allowed': True}
+    finally:
+        os.close(descriptor)
+
+
 def reconcile(request, policy, state, native, save):
     if set(request) != {'paths', 'scopes', 'complete'}:
         raise ValueError('Invalid request fields')
@@ -161,6 +169,11 @@ def main():
     if len(raw) > 1048576:
         raise ValueError('Request too large')
     request = json.loads(raw)
+    if set(request) == {'check_identity'} and request['check_identity'] is True:
+        # FDA is an OS-enforced prerequisite. This fixed read-only open checks
+        # the caller's actual launch context; no database content is read.
+        print(json.dumps(identity_probe()))
+        return
     lock_path = DIRECTORY / 'path-state.lock'
     with lock_path.open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)

@@ -120,6 +120,7 @@ else:
                                  "--json"], capture_output=True, text=True)
         self.assertEqual(result.returncode, 1, result.stderr)
         self.assertEqual(json.loads(result.stdout)["counts"]["failed"], 1)
+        self.assertIn(str(self.dep), result.stderr)
         self.assertTrue((self.base / "state/latest.json").exists())
 
     def test_concurrent_runs_serialize(self):

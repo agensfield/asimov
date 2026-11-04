@@ -1,3 +1,20 @@
+## [0.15.0] - 2026-11-04
+
+- Give the background job a native, Developer ID-signed Asimov application
+  identity. A small native parent supervises the existing reconciler; no
+  arbitrary commands are forwarded. The one Homebrew schedule and restricted
+  settings helper remain unchanged.
+- Add explicit normal-user signing and root-owned app installation, stable
+  bundle/signing requirements, and a read-only launchd identity check before
+  the manual Asimov-specific Full Disk Access grant.
+
+- Point failure notifications to durable last-failure.json, which survives
+  later scoped successes overwriting latest.json.
+- Emit failed events to stderr in JSON mode so the background service's
+  error log includes the actual denial rather than remaining empty.
+- Document that native path updates from launchd require Full Disk Access
+  for the responsible launcher, independently of interactive app approval.
+
 ## [0.14.0] - 2026-11-04
 
 - Add opt-in native fixed-path registration alongside portable sticky markers.
