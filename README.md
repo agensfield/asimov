@@ -66,13 +66,38 @@ the native `SkipPaths` preferences through `defaults export`, not just
 The root-owned helper accepts only approved dependency/sentinel pairs beneath
 installed roots and exact reviewed cache paths/files. It cannot exclude a whole
 worktree, run Git, change backup schedules, or execute configurable commands.
-Native path updates through tmutil require Full Disk Access for the service's
-responsible launcher as well as the restricted administrator grant. Interactive
-Terminal/Codex approval does not authorize the independently launched service.
-Inspect TCC's AttributionChain for the actual identity; Seele's shell-based
-service is attributed to Homebrew Bash. Full Disk Access is enabled manually in
-System Settings; there is no ordinary Allow prompt. Verify a real background
-write after granting access. The helper does not alter TCC grants or its database.
+### Signed background identity
+
+For automatic native path maintenance, install the native Homebrew launcher and
+prepare an Asimov-specific, Developer ID-signed background app:
+
+```sh
+asimov setup-background --identity "Developer ID Application: Your Name (TEAMID)"
+```
+
+Signing runs as your normal user using your existing Keychain identity; the key
+is never exported. The explicit sudo step installs the signed app in
+`/Applications/Asimov Background.app` and the same restricted settings helper.
+The installer verifies the complete signature and refuses a replacement with a
+different designated signing requirement. A stable bundle identifier and
+Developer ID requirement let macOS bind permissions to Asimov across updates.
+The app uses the stable installed CLI entry point, so routine engine upgrades do
+not require rebuilding the signed launcher.
+
+The one Homebrew service launches this app when installed, with the same
+900-second schedule. Its native main executable stays alive as the responsible
+parent of the existing reconciler. The app forwards no arbitrary commands and
+refuses to run as root. Without the installed app, Homebrew uses its native
+launcher directly; granting an interpreter permission is not the managed setup.
+
+Before enabling the service, verify launchd attribution with the app's
+`--check-identity` mode. This fixed read-only probe uses the restricted helper to open the system's
+protected TCC database and close it without reading content. It grants no
+permission and changes no database. Enable **Asimov Background** manually in
+System Settings > Privacy & Security > Full Disk Access, then restart the
+Homebrew service. FDA has no ordinary Allow prompt. Verify a real background
+native-list write after the grant; interactive Terminal/Codex success is not
+background acceptance. The helper never changes TCC grants or its database.
 
 The sudo rule permits only this standalone helper through Apple's isolated
 Python interpreter. Scanning, Git checks, and the existing service remain under

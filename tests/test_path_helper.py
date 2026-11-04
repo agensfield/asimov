@@ -78,6 +78,15 @@ class PathHelperTests(unittest.TestCase):
         self.assertEqual(run.call_args.args[0], ['/usr/bin/defaults', 'export',
             '/Library/Preferences/com.apple.TimeMachine', '-'])
 
+    def test_identity_preflight_is_fixed_read_only_and_reads_zero_content(self):
+        with patch.object(path_helper.os, 'open', return_value=123) as opened, \
+                patch.object(path_helper.os, 'close') as closed, \
+                patch.object(path_helper.os, 'read') as read:
+            self.assertEqual(path_helper.identity_probe(), {'protected_open_allowed': True})
+        opened.assert_called_once_with('/Library/Application Support/com.apple.TCC/TCC.db', os.O_RDONLY)
+        closed.assert_called_once_with(123)
+        read.assert_not_called()
+
     def test_retirement_removes_only_owned_entries_and_only_in_scope(self):
         manual = str(self.root / 'manual/node_modules')
         self.native.current.add(manual)

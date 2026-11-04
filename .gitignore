@@ -10,3 +10,4 @@ docs/triage/
 
 __pycache__/
 *.pyc
+bin/asimov-background
