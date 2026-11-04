@@ -18,6 +18,7 @@
     "~/programming/vyvo/backups"
   ],
   "cache_files": [],
+  "fixed_path_exclusions": false,
   "install_hooks": false,
   "executable": "/opt/homebrew/bin/asimov",
   "cache_paths": [

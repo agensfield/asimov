@@ -30,7 +30,9 @@ overwritten. Ramiz and native Git can share this integration point.
 Receipts: ~/.local/state/asimov/receipts and latest.json. Failures return nonzero.
 The service notifies only on failure. Git/permission errors are never interpreted
 as evidence that content is disposable. Symlink trees, tracked content and
-protected names are kept. No Spotlight index or successful-path cache is trusted.
+protected names are kept. No Spotlight index or successful-path cache is trusted
+for discovery. Sticky markers alone are insufficient when Time Machine cannot
+discover them through Spotlight, notably inside hidden worktree directories.
 Directory attributes are set even where a fixed-path exclusion already applies,
 allowing the Ramiz inheritance patch to propagate actual donor intent.
 
@@ -41,13 +43,45 @@ recreated files are checked again on the next sweep. `cache_paths` remains
 directory-only. Protected paths and symlinks cannot be overridden by either
 allowlist. Keep original histories and unrelated databases backed up.
 
+### Native fixed-path registration
+
+Set `fixed_path_exclusions: true` in the reviewed managed config. Then explicitly
+install the narrow privilege bridge once (and again after helper/policy updates):
+
+```sh
+sudo asimov install-path-helper --user "$USER" --config "$HOME/.config/asimov/managed.json"
+asimov reconcile --json
+```
+
+The existing user service keeps both portable item markers and native
+`tmutil addexclusion -p` entries. Native path entries bypass sticky-marker
+discovery through Spotlight and survive deletion/recreation at the same path.
+Receipts distinguish `fixed_registered` and `fixed_verified`; verification reads
+the native `SkipPaths` preferences through `defaults export`, not just
+`tmutil isexcluded` or a potentially delayed on-disk preferences plist.
+
+The root-owned helper accepts only approved dependency/sentinel pairs beneath
+installed roots and exact reviewed cache paths/files. It cannot exclude a whole
+worktree, run Git, change backup schedules, or execute configurable commands.
+The sudo rule permits only this standalone helper through Apple's isolated
+Python interpreter. Scanning, Git checks, and the existing service remain under
+the normal user; no daemon or repository hooks are added. Reinstall the helper
+after changing its root-owned policy; a mismatch is reported as a failure.
+
+Only entries created by this helper are retired during complete reconciliation
+of their scope. Pre-existing manual exclusions are never adopted or removed.
+Incomplete scans do not retire entries. Explicit cache allowlists remain
+registered even while temporarily absent. Disabling this option does not remove
+existing entries or markers. This does not reclaim local APFS snapshot space,
+remove historical backup data, or change a run's already-captured policy.
+
 Run as the normal user, with Full Disk Access where required. Do not run the
 service as root. Existing historical backup data is unaffected and may still
 require pruning. A post-checkout/install hook leaves a timing window before it
 runs; periodic reconciliation is a fallback, not a zero-exposure guarantee.
 
 Validation:
-`python3 -m unittest discover -s tests -p 'test_reconcile.py' -v`
+`python3 -m unittest discover -s tests -p 'test_*.py' -v`
 and `make check` for upstream compatibility.
 
 Stop with `brew services stop agensfield/tap/asimov`. Disabling the service

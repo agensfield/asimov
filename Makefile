@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help test test-system-bash lint check bench bench-home install uninstall exclusions version prep-release release release-beta verify-release
+.PHONY: help test test-system-bash managed-test lint check bench bench-home install uninstall exclusions version prep-release release release-beta verify-release
 
 # Which GitHub repo + git remote releases target. Defaults to the project's home
 # (AsimovMac/asimov). Pinning GH_REPO to $(REPO) stops another configured remote
@@ -16,7 +16,7 @@ help: ## Show this help
 version: ## Print asimov version
 	@./bin/asimov --version
 
-exclusions: ## List all paths excluded from Time Machine
+exclusions: ## List Spotlight-indexed sticky markers (not native fixed-path policy)
 	@sudo mdfind "com_apple_backup_excludeItem = 'com.apple.backupd'"
 
 
@@ -41,7 +41,10 @@ lint: ## Run Shellcheck on all shell scripts
 	@shellcheck -x --source-path=. bin/asimov
 	@shellcheck scripts/install.sh scripts/install-remote.sh scripts/uninstall.sh scripts/prep-release.sh scripts/test.sh tests/test_helper.bash tests/bin/run-tests.sh tests/bin/tmutil tests/bin/mdfind tests/bin/launchctl
 
-check: test lint ## Run tests and linting
+managed-test: ## Run managed reconciliation and native registration contracts
+	@python3 -m unittest discover -s tests -p 'test_*.py' -v
+
+check: test lint managed-test ## Run tests and linting
 
 ## bench: Compare dry-run scan timing: current vs v0.4.2, against tests/fixture
 bench:

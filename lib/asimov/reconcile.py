@@ -16,7 +16,7 @@ import time
 import metadata
 
 MARKER = "com.apple.metadata:com_apple_backup_excludeItem"
-VERSION = "0.13.2"
+VERSION = "0.14.0"
 DEFAULT_CONFIG = Path.home() / ".config/asimov/managed.json"
 
 
@@ -51,6 +51,7 @@ class Reconciler:
         self.events = []
         self.repositories = set()
         self.tracked = {}
+        self.fixed_targets = set()
         self.tmutil = config.get("tmutil", "/usr/bin/tmutil")
         self.git = config.get("git", "/usr/bin/git")
 
@@ -153,9 +154,11 @@ class Reconciler:
             except OSError:
                 marked = False
             if excluded and marked:
+                self.fixed_targets.add(str(path))
                 self.record(path, "already_excluded")
                 return
             if self.dry:
+                self.fixed_targets.add(str(path))
                 self.record(path, "would_mark" if excluded else "would_exclude")
                 return
             before = (identity.st_dev, identity.st_ino)
@@ -170,11 +173,32 @@ class Reconciler:
                 raise RuntimeError("Exclusion did not verify")
             if not metadata.read(path, MARKER):
                 raise RuntimeError("Local exclusion marker did not verify")
+            self.fixed_targets.add(str(path))
             self.record(path, "marked" if excluded else "excluded")
         except FileNotFoundError:
             self.record(path, "vanished", "Removed during exclusion")
         except (OSError, RuntimeError, subprocess.SubprocessError) as error:
             self.record(path, "failed", str(error))
+
+    def register_fixed_paths(self, scopes):
+        if not self.config.get("fixed_path_exclusions") or not scopes:
+            return
+        import path_helper
+        if self.dry:
+            for path in sorted(self.fixed_targets):
+                self.record(path, "would_verify_fixed", "Native fixed-path registration")
+            return
+        try:
+            request = {"paths": sorted(self.fixed_targets), "scopes": list(map(str, scopes)),
+                       "complete": not any(e["state"] in ("failed", "out_of_scope")
+                                           for e in self.events)}
+            result = command(["/usr/bin/sudo", "-n", "/usr/bin/python3", "-I",
+                              str(path_helper.HELPER)], input=json.dumps(request))
+            if result.returncode:
+                raise RuntimeError(result.stderr.strip() or "Fixed-path helper failed")
+            self.events.extend(json.loads(result.stdout)["events"])
+        except (OSError, ValueError, KeyError, RuntimeError, subprocess.SubprocessError) as error:
+            self.record(path_helper.HELPER, "failed", str(error))
 
     def install_hooks(self, config_path):
         if not self.hooks or self.dry:
@@ -280,6 +304,15 @@ def main():
             path = Path(item).expanduser()
             if path.exists() and not path.is_symlink():
                 engine.exclude(path, regular_file=True)
+        scopes = [root for root in roots
+                  if any(root == base or base in root.parents for base in engine.roots)]
+        if not args.root:
+            for item in config.get("cache_paths", []) + config.get("cache_files", []):
+                path = Path(item).expanduser()
+                scopes.append(path)
+                if not path.exists() and not path.is_symlink() and not engine.protected_path(path):
+                    engine.fixed_targets.add(str(path))
+        engine.register_fixed_paths(scopes)
         engine.install_hooks(args.config.expanduser().resolve())
         counts = dict(collections.Counter(e["state"] for e in engine.events))
         receipt = {"version": VERSION, "time": dt.datetime.now(dt.timezone.utc).isoformat(),

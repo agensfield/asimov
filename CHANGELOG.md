@@ -1,3 +1,14 @@
+## [0.14.0] - 2026-11-04
+
+- Add opt-in native fixed-path registration alongside portable sticky markers.
+  Time Machine discovers sticky markers through Spotlight; hidden worktrees can
+  be absent from that index even when tmutil isexcluded reports Excluded.
+- Keep discovery and Git validation in the existing user service. A root-owned,
+  allowlisted helper updates and verifies only native path exclusions, with no
+  additional service, hooks, backup operations, or configurable root commands.
+- Preserve manual entries and retire only helper-owned entries after complete
+  scoped discovery. Exact cache-file entries survive sidecar recreation.
+
 ## [0.13.2] - 2026-11-03
 
 - Support individually reviewed regular files through an explicit cache_files
