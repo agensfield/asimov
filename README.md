@@ -28,6 +28,9 @@ as hook_deferred and must be explicitly composed. No global hooks setting is
 overwritten. Ramiz and native Git can share this integration point.
 
 Receipts: ~/.local/state/asimov/receipts and latest.json. Failures return nonzero.
+Notifications point to durable last-failure.json because later scoped successes
+can replace latest.json. Failed events also reach the service stderr log in JSON
+mode.
 The service notifies only on failure. Git/permission errors are never interpreted
 as evidence that content is disposable. Symlink trees, tracked content and
 protected names are kept. No Spotlight index or successful-path cache is trusted
@@ -63,6 +66,14 @@ the native `SkipPaths` preferences through `defaults export`, not just
 The root-owned helper accepts only approved dependency/sentinel pairs beneath
 installed roots and exact reviewed cache paths/files. It cannot exclude a whole
 worktree, run Git, change backup schedules, or execute configurable commands.
+Native path updates through tmutil require Full Disk Access for the service's
+responsible launcher as well as the restricted administrator grant. Interactive
+Terminal/Codex approval does not authorize the independently launched service.
+Inspect TCC's AttributionChain for the actual identity; Seele's shell-based
+service is attributed to Homebrew Bash. Full Disk Access is enabled manually in
+System Settings; there is no ordinary Allow prompt. Verify a real background
+write after granting access. The helper does not alter TCC grants or its database.
+
 The sudo rule permits only this standalone helper through Apple's isolated
 Python interpreter. Scanning, Git checks, and the existing service remain under
 the normal user; no daemon or repository hooks are added. Reinstall the helper

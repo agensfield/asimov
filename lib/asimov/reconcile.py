@@ -16,7 +16,7 @@ import time
 import metadata
 
 MARKER = "com.apple.metadata:com_apple_backup_excludeItem"
-VERSION = "0.14.0"
+VERSION = "0.14.1"
 DEFAULT_CONFIG = Path.home() / ".config/asimov/managed.json"
 
 
@@ -333,9 +333,9 @@ def main():
             print(json.dumps(receipt))
         else:
             print(json.dumps(counts, sort_keys=True))
-            for event in engine.events:
-                if event["state"] in ("failed", "hook_deferred"):
-                    print(event["path"] + ": " + event["reason"], file=sys.stderr)
+        for event in engine.events:
+            if event["state"] in ("failed", "hook_deferred"):
+                print(event["path"] + ": " + event["reason"], file=sys.stderr)
         return install_status or (1 if counts.get("failed") or counts.get("hook_deferred") else 0)
 
 

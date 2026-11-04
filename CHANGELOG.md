@@ -1,3 +1,12 @@
+## [0.14.1] - 2026-11-04
+
+- Point failure notifications to durable last-failure.json, which survives
+  later scoped successes overwriting latest.json.
+- Emit failed events to stderr in JSON mode so the background service's
+  error log includes the actual denial rather than remaining empty.
+- Document that native path updates from launchd require Full Disk Access
+  for the responsible launcher, independently of interactive app approval.
+
 ## [0.14.0] - 2026-11-04
 
 - Add opt-in native fixed-path registration alongside portable sticky markers.
