@@ -44,7 +44,7 @@ jobs:
           # asimov-<version>/{bin,lib,data} and installs with scripts/install.sh.
           STAGE="asimov-${FULL_VERSION}"
           TARBALL="${STAGE}.tar.gz"
-          python3 -m unittest discover -s tests -p 'test_reconcile.py' -v
+          python3 -m unittest discover -s tests -p 'test_*.py' -v
           git archive --format=tar --prefix="$STAGE/" HEAD | gzip -n > "$TARBALL"
 
           gh release create "$TAG" \

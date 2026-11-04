@@ -7,7 +7,7 @@ set -Eeu -o pipefail
 # Since these files can be restored easily via their respective installation
 # tools, there's no reason to waste time/bandwidth on backing them up.
 #
-# To retrieve a full list of excluded files, you may run:
+# To retrieve Spotlight-indexed sticky exclusions (not hidden/native path entries):
 #
 #   sudo mdfind "com_apple_backup_excludeItem = 'com.apple.backupd'"
 #
@@ -27,7 +27,7 @@ umask 077
 # Keep ASIMOV_VERSION in sync with CHANGELOG and package managers (e.g. Homebrew).
 # It lives in this file, not in a module, because `asimov doctor` reads the version
 # of other installs by grepping their launcher rather than executing them.
-readonly ASIMOV_VERSION='0.13.2'
+readonly ASIMOV_VERSION='0.14.0'
 
 # Resolve this script to its physical path, following symlinks. Homebrew links
 # bin/asimov into the cellar, so the library sits next to the *target*, not the link.
@@ -128,6 +128,10 @@ case "${1:-}" in
     reconcile)
         shift
         exec python3 "${ASIMOV_LIB}/reconcile.py" "$@"
+        ;;
+    install-path-helper)
+        shift
+        exec python3 "${ASIMOV_LIB}/install_path_helper.py" "$@"
         ;;
     *)
         exec python3 "${ASIMOV_LIB}/reconcile.py" "$@"
