@@ -16,7 +16,7 @@ import time
 import metadata
 
 MARKER = "com.apple.metadata:com_apple_backup_excludeItem"
-VERSION = "0.15.0"
+VERSION = "0.15.1"
 DEFAULT_CONFIG = Path.home() / ".config/asimov/managed.json"
 
 

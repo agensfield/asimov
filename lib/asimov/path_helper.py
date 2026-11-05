@@ -141,19 +141,30 @@ def reconcile(request, policy, state, native, save):
     save({'managed_paths': sorted(managed)})
     if additions:
         native.change('addexclusion', additions)
-    removals = sorted(p for p in managed - set(targets)
-                      if request['complete'] and any(descendant(Path(p), s) for s in scopes))
+    retirements = sorted(p for p in managed - set(targets)
+                         if request['complete'] and any(descendant(Path(p), s) for s in scopes))
+    # An interrupted sweep can leave ownership for an entry already removed.
+    # Do not pass absent entries to tmutil: on Seele, removing an absent path
+    # also dropped a newly registered, unrelated entry. Retire the ledger only.
+    removals = sorted(set(retirements) & current)
     if removals:
         native.change('removeexclusion', removals)
     final = native.paths()
-    if not set(targets) <= final or set(removals) & final:
-        raise RuntimeError('Native fixed-path preferences did not verify')
-    managed.difference_update(removals)
+    missing = set(targets) - final
+    remaining = set(retirements) & final
+    lost = current - set(removals) - final
+    if missing or remaining or lost:
+        raise RuntimeError('Native fixed-path preferences did not verify: ' + json.dumps({
+            'missing_targets': sorted(missing), 'remaining_retirements': sorted(remaining),
+            'lost_existing_entries': sorted(lost)}))
+    managed.difference_update(retirements)
     save({'managed_paths': sorted(managed)})
     return [{'path': p, 'state': 'fixed_registered' if p in additions else 'fixed_verified',
              'reason': 'Verified in native SkipPaths preferences'} for p in targets] + [
-        {'path': p, 'state': 'fixed_removed', 'reason': 'Retired Asimov-owned path entry'}
-        for p in removals] + [
+        {'path': p, 'state': 'fixed_removed',
+         'reason': 'Retired Asimov-owned path entry' if p in removals else
+                   'Retired already-absent Asimov-owned path entry'}
+        for p in retirements] + [
         {'path': p, 'state': 'fixed_vanished', 'reason': 'Removed before native registration'}
         for p, value in validated.items() if value is None]
 

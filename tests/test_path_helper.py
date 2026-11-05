@@ -107,6 +107,39 @@ class PathHelperTests(unittest.TestCase):
         self.run_helper(paths=[])
         self.assertIn(str(self.dep), self.native.current)
 
+    def test_already_absent_owned_entry_retires_without_native_removal(self):
+        absent = str(self.root / '.worktrees/retired/node_modules')
+        manual = str(self.root / 'manual/node_modules')
+        self.state = {'managed_paths': [absent]}
+        self.native.current.add(manual)
+        events = self.run_helper()
+        self.assertEqual(self.native.calls, [('addexclusion', [str(self.dep)])])
+        self.assertEqual(self.native.current, {manual, str(self.dep)})
+        self.assertEqual(self.state['managed_paths'], [str(self.dep)])
+        retired = next(e for e in events if e['path'] == absent)
+        self.assertEqual(retired['state'], 'fixed_removed')
+        self.assertIn('already-absent', retired['reason'])
+
+    def test_verification_detects_unrelated_native_entry_loss(self):
+        manual = str(self.root / 'manual/node_modules')
+        self.native.current.add(manual)
+        original = self.native.change
+
+        def dropping_change(verb, paths):
+            original(verb, paths)
+            self.native.current.discard(manual)
+
+        self.native.change = dropping_change
+        with self.assertRaisesRegex(RuntimeError, 'lost_existing_entries') as caught:
+            self.run_helper()
+        self.assertIn(manual, str(caught.exception))
+
+    def test_verification_names_missing_targets(self):
+        self.native.change = lambda verb, paths: None
+        with self.assertRaisesRegex(RuntimeError, 'missing_targets') as caught:
+            self.run_helper()
+        self.assertIn(str(self.dep), str(caught.exception))
+
     def test_absent_allowlisted_sidecars_stay_registered_across_recreation(self):
         item = self.root / 'index.sqlite-wal'
         self.policy['cache_files'] = [str(item)]
