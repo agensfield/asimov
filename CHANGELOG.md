@@ -1,3 +1,11 @@
+## [0.15.1] - 2026-11-05
+
+### Fixed
+- Retire already-absent owned exclusions without calling native removal again.
+  An observed no-op removal on macOS dropped an unrelated newly added entry.
+- Verify preservation of unrelated existing entries and include exact missing,
+  remaining, and unexpectedly lost paths in native verification failures.
+
 ## [0.15.0] - 2026-11-04
 
 - Give the background job a native, Developer ID-signed Asimov application
